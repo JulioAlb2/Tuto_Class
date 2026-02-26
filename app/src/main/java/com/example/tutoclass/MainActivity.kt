@@ -1,47 +1,26 @@
- package com.example.tutoclass
+package com.example.tutoclass
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.tutoclass.ui.theme.TutoclassTheme
+import com.example.tutoclass.presentation.auth.LoginScreen // Asegúrate de que la ruta sea correcta
+import com.example.tutoclass.ui.theme.TutoClassTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint // Requerido por Hilt para inyectar dependencias en esta actividad
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Habilita el diseño de borde a borde (transparencia en barras de estado)
         enableEdgeToEdge()
+
         setContent {
-            TutoclassTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            TutoClassTheme {
+                // Llamamos directamente a la pantalla de Login que creamos
+                LoginScreen()
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TutoclassTheme {
-        Greeting("Androd")
     }
 }
