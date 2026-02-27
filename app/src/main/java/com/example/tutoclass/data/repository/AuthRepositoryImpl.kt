@@ -1,21 +1,10 @@
 package com.example.tutoclass.data.repository
 
-import com.example.tutoclass.data.remote.TutoApi
-import com.example.tutoclass.data.remote.dto.toDomain
-import com.example.tutoclass.domain.model.Group
-import com.example.tutoclass.domain.repository.StudentRepository
+import com.example.tutoclass.domain.repository.AuthRepository
 import javax.inject.Inject
 
-class StudentRepositoryImpl @Inject constructor(
-    private val api: TutoApi
-) : StudentRepository {
-
-    override suspend fun getGroups(): List<Group> {
-        // Llamamos la API real
-        return api.getGroups().map { it.toDomain() }
-    }
-
-    override suspend fun joinGroup(codigoAcceso: String): Result<Unit> {
-        return Result.success(Unit)
+class AuthRepositoryImpl @Inject constructor() : AuthRepository {
+    override suspend fun login(email: String, pass: String): Result<Boolean> {
+        return Result.success(true) // Simulación de login exitoso
     }
 }
