@@ -10,16 +10,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tutoclass.ui.theme.*
 
 @Composable
-fun StudentHomeScreen(onLogout: () -> Unit) {
+fun StudentHomeScreen(
+    onLogout: () -> Unit,
+    viewModel: StudentHomeViewModel = hiltViewModel() // Inyectamos el ViewModel
+) {
+    // Escuchamos el estado del ViewModel (los grupos que vienen del SQL)
+    val state by viewModel.state.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,7 +54,7 @@ fun StudentHomeScreen(onLogout: () -> Unit) {
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("Usuario Demo", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("Rocio Ballinas", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         Text("🎓 Estudiante", fontSize = 11.sp, color = TutoGray)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -61,7 +70,7 @@ fun StudentHomeScreen(onLogout: () -> Unit) {
 
         Column(modifier = Modifier.padding(20.dp)) {
             // --- 2. SALUDO ---
-            Text("¡Hola, Rocio Ballinas", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
+            Text("¡Hola, Rocio Ballinas!", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
             Text("Continúa tu camino de aprendizaje", color = TutoGray)
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -113,14 +122,27 @@ fun StudentHomeScreen(onLogout: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- 6. EXPLORAR CLASES ---
+            // --- 6. EXPLORAR CLASES DINÁMICAS ---
             Text("Explorar Clases", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Aquí mostramos un par de tarjetas de ejemplo
-            CourseCard("Moviles 1", "Prof. Ali López Zúnun", "📐")
-            Spacer(modifier = Modifier.height(12.dp))
-            CourseCard("Ingles VIII", "Prof. Jose Alonso Macias Montoya", "🗣️")
+            if (state.isLoading) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = TutoGreen)
+                }
+            } else if (state.error != null) {
+                Text("Error al cargar clases", color = Color.Red, modifier = Modifier.padding(8.dp))
+            } else {
+                // Aquí recorremos los grupos que vienen de la arquitectura (SQL -> API -> Repo)
+                state.groups.forEach { group ->
+                    CourseCard(
+                        title = group.nombre,
+                        teacher = "Prof. ${group.nombreProfesor}",
+                        emoji = if (group.materia.contains("Ingles", true)) "🗣️" else "📐"
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
         }
     }
 }
