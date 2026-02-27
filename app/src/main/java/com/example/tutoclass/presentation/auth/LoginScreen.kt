@@ -13,14 +13,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// Importamos los colores y los componentes de las otras carpetas
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tutoclass.ui.theme.*
 import com.example.tutoclass.presentation.components.*
 
 @Composable
-fun LoginScreen() {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel(),
+    onNavigateToRegister: () -> Unit,
+    onLoginSuccess: (String) -> Unit // Nuevo parámetro para el rol
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    // Estado local para manejar la selección visual del rol
     var selectedRole by remember { mutableStateOf("Estudiante") }
 
     Column(
@@ -32,14 +36,13 @@ fun LoginScreen() {
     ) {
         Spacer(modifier = Modifier.height(60.dp))
 
-        // Logo
         Box(
             modifier = Modifier
                 .size(80.dp)
                 .background(TutoGradient, RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.School, contentDescription = null, tint = Color.White, modifier = Modifier.size(45.dp))
+            Icon(Icons.Default.School, null, tint = Color.White, modifier = Modifier.size(45.dp))
         }
         Text("TutoClass", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
         Text("Aprende sin límites", color = TutoGray)
@@ -58,24 +61,66 @@ fun LoginScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Estos ahora se leen de TutoComponents.kt
-                TutoTextField("Correo Electrónico", email, { email = it }, Icons.Default.Email)
-                TutoTextField("Contraseña", password, { password = it }, Icons.Default.Lock, true)
+                TutoTextField(
+                    label = "Correo Electrónico",
+                    value = uiState.email,
+                    onValueChange = { viewModel.onLoginChanged(it, uiState.password) },
+                    icon = Icons.Default.Email
+                )
+
+                TutoTextField(
+                    label = "Contraseña",
+                    value = uiState.password,
+                    onValueChange = { viewModel.onLoginChanged(uiState.email, it) },
+                    icon = Icons.Default.Lock,
+                    isPassword = true
+                )
 
                 Text("Ingresar como", modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RoleButton("Estudiante", selectedRole == "Estudiante", { selectedRole = "Estudiante" }, Modifier.weight(1f), "🎓")
-                    RoleButton("Tutor", selectedRole == "Tutor", { selectedRole = "Tutor" }, Modifier.weight(1f), "👨‍🏫")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RoleButton(
+                        text = "Estudiante",
+                        isSelected = selectedRole == "Estudiante",
+                        onClick = { selectedRole = "Estudiante" },
+                        modifier = Modifier.weight(1f),
+                        icon = "🎓"
+                    )
+                    RoleButton(
+                        text = "Tutor",
+                        isSelected = selectedRole == "Tutor",
+                        onClick = { selectedRole = "Tutor" },
+                        modifier = Modifier.weight(1f),
+                        icon = "👨‍🏫"
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                TutoGradientButton(text = "Entrar", onClick = { /* TODO: Login */ })
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else {
+                    TutoGradientButton(
+                        text = "Entrar",
+                        onClick = {
+                            // Simulamos el login y pasamos el rol seleccionado
+                            onLoginSuccess(selectedRole)
+                        }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     Text("¿No tienes cuenta? ")
-                    Text("Regístrate gratis", color = TutoGreen, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Regístrate gratis",
+                        color = TutoGreen,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onNavigateToRegister() }
+                    )
                 }
             }
         }
