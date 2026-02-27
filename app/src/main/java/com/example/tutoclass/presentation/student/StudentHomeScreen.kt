@@ -26,7 +26,6 @@ fun StudentHomeScreen(
     onLogout: () -> Unit,
     viewModel: StudentHomeViewModel = hiltViewModel() // Inyectamos el ViewModel
 ) {
-    // Escuchamos el estado del ViewModel (los grupos que vienen del SQL)
     val state by viewModel.state.collectAsState()
 
     Column(
@@ -35,7 +34,6 @@ fun StudentHomeScreen(
             .background(TutoBgCanvas)
             .verticalScroll(rememberScrollState())
     ) {
-        // --- 1. CABECERA (NAVBAR) ---
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Color.White,
@@ -69,13 +67,11 @@ fun StudentHomeScreen(
         }
 
         Column(modifier = Modifier.padding(20.dp)) {
-            // --- 2. SALUDO ---
             Text("¡Hola, Rocio Ballinas!", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
             Text("Continúa tu camino de aprendizaje", color = TutoGray)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- 3. ESTADÍSTICAS (STATS) ---
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatCard("3", "Clases Activas", Icons.Default.MenuBook, Modifier.weight(1f))
                 StatCard("24", "Horas Totales", Icons.Default.AccessTime, Modifier.weight(1f))
@@ -84,14 +80,12 @@ fun StudentHomeScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // --- 4. PRÓXIMAS CLASES (BANNER GRADIENTE) ---
             Text("Próximas Clases", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
             Spacer(modifier = Modifier.height(12.dp))
             NextClassCard("Moviles 1", "Ali López Zúnun", "Hoy, 3:00 PM", "En 2 horas")
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // --- 5. BUSCADOR Y CATEGORÍAS ---
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
@@ -122,7 +116,6 @@ fun StudentHomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- 6. EXPLORAR CLASES DINÁMICAS ---
             Text("Explorar Clases", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -133,7 +126,6 @@ fun StudentHomeScreen(
             } else if (state.error != null) {
                 Text("Error al cargar clases", color = Color.Red, modifier = Modifier.padding(8.dp))
             } else {
-                // Aquí recorremos los grupos que vienen de la arquitectura (SQL -> API -> Repo)
                 state.groups.forEach { group ->
                     CourseCard(
                         title = group.nombre,

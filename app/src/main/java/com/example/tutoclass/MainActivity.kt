@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.tutoclass.presentation.navigation.NavGraph // Importamos el mapa de navegación
+import com.example.tutoclass.presentation.navigation.NavGraph
 import com.example.tutoclass.ui.theme.TutoClassTheme
 import dagger.hilt.android.AndroidEntryPoint
 

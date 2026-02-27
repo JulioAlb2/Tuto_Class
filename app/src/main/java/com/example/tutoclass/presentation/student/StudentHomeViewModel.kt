@@ -19,7 +19,7 @@ data class StudentHomeState(
 
 @HiltViewModel
 class StudentHomeViewModel @Inject constructor(
-    private val repository: StudentRepository // Inyectado automáticamente gracias a tu RepositoryModule
+    private val repository: StudentRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StudentHomeState())

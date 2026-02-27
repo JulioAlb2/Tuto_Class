@@ -11,7 +11,7 @@ class StudentRepositoryImpl @Inject constructor(
 ) : StudentRepository {
 
     override suspend fun getGroups(): List<Group> {
-        // Llamamos la API real
+        // API aqui julio xd
         return api.getGroups().map { it.toDomain() }
     }
 
