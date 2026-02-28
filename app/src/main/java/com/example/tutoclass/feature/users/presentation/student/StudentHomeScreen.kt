@@ -20,8 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.compose.TutoGradient
+import com.example.compose.primaryLight
 import com.example.tutoclass.core.ui.theme.TutoBgCanvas
-import com.example.tutoclass.core.ui.theme.TutoGradient
 import com.example.tutoclass.core.ui.theme.TutoGray
 import com.example.tutoclass.core.ui.theme.TutoGreen
 import com.example.tutoclass.core.ui.theme.TutoTextDark
@@ -40,25 +41,27 @@ fun StudentHomeScreen(
             .verticalScroll(rememberScrollState())
     ) {
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .height(97.dp),
             color = Color.White,
             shadowElevation = 4.dp
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                modifier = Modifier
+                    .padding(horizontal = 30.dp, vertical = 12.dp)
+                    .padding(top = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.School, contentDescription = null, tint = TutoGreen, modifier = Modifier.size(28.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("TutoClass", color = TutoGreen, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("TutoClass", color = primaryLight, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("Rocio Ballinas", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text("🎓 Estudiante", fontSize = 11.sp, color = TutoGray)
+
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     IconButton(
@@ -72,7 +75,12 @@ fun StudentHomeScreen(
         }
 
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("¡Hola, Rocio Ballinas!", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
+            Text(
+                text = "¡Hola, ${state.user?.nombre?.split(" ")?.firstOrNull() ?: ""}!",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = TutoTextDark
+            )
             Text("Continúa tu camino de aprendizaje", color = TutoGray)
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -85,7 +93,10 @@ fun StudentHomeScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            Text("Próximas Clases", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
+            Text("Próximas Clases", fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = TutoTextDark)
+
             Spacer(modifier = Modifier.height(12.dp))
             NextClassCard("Moviles 1", "Ali López Zúnun", "Hoy, 3:00 PM", "En 2 horas")
 

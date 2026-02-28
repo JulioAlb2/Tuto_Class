@@ -14,8 +14,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.compose.TutoGradient
+import com.example.compose.primaryDark
 import com.example.tutoclass.core.ui.theme.TutoBgCanvas
-import com.example.tutoclass.core.ui.theme.TutoGradient
 import com.example.tutoclass.core.ui.theme.TutoGray
 import com.example.tutoclass.core.ui.theme.TutoGreen
 import com.example.tutoclass.core.ui.theme.TutoTextDark
@@ -70,7 +71,9 @@ fun LoginScreen(
                     label = "Correo Electrónico",
                     value = uiState.email,
                     onValueChange = { email -> viewModel.onLoginChanged(email, uiState.password) },
-                    icon = Icons.Default.Email
+                    icon = Icons.Default.Email,
+                    containerColor = primaryDark,
+
                 )
 
                 TutoTextField(
