@@ -64,5 +64,11 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.androidx.navigation.compose)
+    
+    // Retrofit
+    implementation(libs.com.squareup.retrofit2.retrofit)
+    implementation(libs.com.squareup.retrofit2.converter.json)
 
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
 }
