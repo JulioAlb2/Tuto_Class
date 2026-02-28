@@ -1,11 +1,11 @@
 package com.example.tutoclass.feature.users.data.repository
 
 import android.util.Log
-import com.example.tutoclass.feature.users.data.local.AuthLocalDataSource
-import com.example.tutoclass.feature.users.data.remote.AuthApi
-import com.example.tutoclass.feature.users.data.remote.dto.LoginRequest
-import com.example.tutoclass.feature.users.data.remote.dto.RegisterRequest
-import com.example.tutoclass.feature.users.data.remote.dto.toDomain
+import com.example.tutoclass.feature.users.data.datasource.AuthApi
+import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSource
+import com.example.tutoclass.feature.users.data.datasource.remote.dto.LoginRequest
+import com.example.tutoclass.feature.users.data.datasource.remote.dto.RegisterRequest
+import com.example.tutoclass.feature.users.data.datasource.remote.toDomain
 import com.example.tutoclass.feature.users.domain.model.User
 import com.example.tutoclass.feature.users.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
@@ -25,35 +25,50 @@ class AuthRepositoryImpl @Inject constructor(
             val user = response.toDomain()
             
             if (user.token.isNullOrEmpty()) {
-                Log.e("AWS_AUTH", "Error: La API de login no devolvió un token válido")
+                Log.e("AUTH_REPO", "Error: La API de login no devolvió un token válido")
                 return Result.failure(Exception("Token no recibido del servidor"))
             }
 
-            Log.d("AWS_AUTH", "Login exitoso. Guardando token para el usuario: ${user.id}")
+            Log.d("AUTH_REPO", "Login exitoso. Guardando usuario en local: ${user.nombre}")
             localDataSource.saveUser(user)
             Result.success(user)
         } catch (e: Exception) {
-            Log.e("AWS_AUTH", "Error en login: ${e.message}")
+            Log.e("AUTH_REPO", "Error en login: ${e.message}")
             Result.failure(e)
         }
     }
 
-    override suspend fun register(nombre: String, email: String, pass: String, rol: String): Result<User> {
+    override suspend fun register(
+        nombre: String,
+        email: String,
+        pass: String,
+        rol: String,
+        materias: List<String>?
+    ): Result<User> {
         return try {
-            val response = api.register(RegisterRequest(nombre, email, pass, rol))
+            val request = RegisterRequest(nombre, email, pass, materias)
+
+            val response = if (rol == "Maestro") {
+                api.registerMaestro(request)
+            } else {
+                api.registerAlumno(request)
+            }
+
             val user = response.toDomain()
             
             if (!user.token.isNullOrEmpty()) {
+                Log.d("AUTH_REPO", "Registro exitoso. Guardando usuario en local: ${user.nombre}")
                 localDataSource.saveUser(user)
             }
             Result.success(user)
         } catch (e: Exception) {
-            Log.e("AWS_AUTH", "Error en registro: ${e.message}")
+            Log.e("AUTH_REPO", "Error en registro: ${e.message}")
             Result.failure(e)
         }
     }
 
     override suspend fun logout() {
+        Log.d("AUTH_REPO", "Cerrando sesión...")
         localDataSource.clearUser()
     }
 

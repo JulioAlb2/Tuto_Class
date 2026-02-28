@@ -1,4 +1,4 @@
-package com.example.tutoclass.feature.users.data.local
+package com.example.tutoclass.feature.users.data.datasource.local
 
 import android.content.Context
 import android.util.Log

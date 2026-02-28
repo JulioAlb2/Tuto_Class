@@ -1,8 +1,8 @@
 package com.example.tutoclass.core.di
 
-import com.example.tutoclass.feature.users.data.local.AuthLocalDataSource
-import com.example.tutoclass.feature.users.data.local.AuthLocalDataSourceImpl
-import com.example.tutoclass.feature.users.data.remote.AuthApi
+import com.example.tutoclass.feature.users.data.datasource.AuthApi
+import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSource
+import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSourceImpl
 import com.example.tutoclass.feature.users.data.repository.AuthRepositoryImpl
 import com.example.tutoclass.feature.users.domain.repository.AuthRepository
 import dagger.Binds
@@ -41,7 +41,7 @@ abstract class AppModule {
         @Singleton
         fun provideRetrofit(): Retrofit {
             return Retrofit.Builder()
-                .baseUrl("https://tutoapi.example.com/") // URL base de ejemplo
+                .baseUrl("https://practicasoftware.fun/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
         }
