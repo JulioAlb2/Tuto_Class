@@ -19,7 +19,6 @@ import com.example.tutoclass.core.ui.theme.TutoGradient
 import com.example.tutoclass.core.ui.theme.TutoGray
 import com.example.tutoclass.core.ui.theme.TutoGreen
 import com.example.tutoclass.core.ui.theme.TutoTextDark
-import com.example.tutoclass.feature.users.presentation.components.RoleButton
 import com.example.tutoclass.feature.users.presentation.components.TutoGradientButton
 import com.example.tutoclass.feature.users.presentation.components.TutoTextField
 
@@ -27,11 +26,9 @@ import com.example.tutoclass.feature.users.presentation.components.TutoTextField
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
     onNavigateToRegister: () -> Unit,
-    onLoginSuccess: (String) -> Unit // Nuevo parámetro para el rol
+    onLoginSuccess: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // Estado local para manejar la selección visual del rol
-    var selectedRole by remember { mutableStateOf("Estudiante") }
 
     Column(
         modifier = Modifier
@@ -56,7 +53,9 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(30.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(8.dp)
@@ -70,36 +69,24 @@ fun LoginScreen(
                 TutoTextField(
                     label = "Correo Electrónico",
                     value = uiState.email,
-                    onValueChange = { viewModel.onLoginChanged(it, uiState.password) },
+                    onValueChange = { email -> viewModel.onLoginChanged(email, uiState.password) },
                     icon = Icons.Default.Email
                 )
 
                 TutoTextField(
                     label = "Contraseña",
                     value = uiState.password,
-                    onValueChange = { viewModel.onLoginChanged(uiState.email, it) },
+                    onValueChange = { pass -> viewModel.onLoginChanged(uiState.email, pass) },
                     icon = Icons.Default.Lock,
                     isPassword = true
                 )
 
-                Text("Ingresar como", modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RoleButton(
-                        text = "Estudiante",
-                        isSelected = selectedRole == "Estudiante",
-                        onClick = { selectedRole = "Estudiante" },
-                        modifier = Modifier.weight(1f),
-                        icon = "🎓"
-                    )
-                    RoleButton(
-                        text = "Tutor",
-                        isSelected = selectedRole == "Tutor",
-                        onClick = { selectedRole = "Tutor" },
-                        modifier = Modifier.weight(1f),
-                        icon = "👨‍🏫"
+                if (uiState.error != null) {
+                    Text(
+                        text = uiState.error ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp),
+                        fontSize = 12.sp
                     )
                 }
 
@@ -111,8 +98,7 @@ fun LoginScreen(
                     TutoGradientButton(
                         text = "Entrar",
                         onClick = {
-                            // Simulamos el login y pasamos el rol seleccionado
-                            onLoginSuccess(selectedRole)
+                            viewModel.login(onSuccess = onLoginSuccess)
                         }
                     )
                 }

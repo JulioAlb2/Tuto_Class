@@ -21,13 +21,10 @@ fun NavGraph() {
                 onNavigateToRegister = {
                     navController.navigate("register")
                 },
-                onLoginSuccess = { role ->
-                    if (role == "Estudiante") {
-                        navController.navigate("student_home") {
-                            popUpTo("login") { inclusive = true }
-                        }
+                onLoginSuccess = {
+                    navController.navigate("student_home") {
+                        popUpTo("login") { inclusive = true }
                     }
-                    // Aquí podrías añadir el if para el Tutor después
                 }
             )
         }
@@ -36,6 +33,11 @@ fun NavGraph() {
             RegisterScreen(
                 onBackToLogin = {
                     navController.popBackStack()
+                },
+                onRegisterSuccess = {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
                 }
             )
         }

@@ -4,6 +4,8 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +26,7 @@ import com.example.tutoclass.feature.users.presentation.components.TutoTextField
 @Composable
 fun RegisterScreen(
     onBackToLogin: () -> Unit,
+    onRegisterSuccess: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -39,11 +42,13 @@ fun RegisterScreen(
 
         // Botón volver atrás
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackToLogin) {
-                Icon(Icons.Default.ArrowBack, contentDescription = null, tint = TutoTextDark)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = TutoTextDark)
             }
             Text("Crear cuenta", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
@@ -51,7 +56,9 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(8.dp)
@@ -61,6 +68,28 @@ fun RegisterScreen(
                 Text("Regístrate para comenzar a aprender", color = TutoGray, fontSize = 14.sp)
 
                 Spacer(modifier = Modifier.height(20.dp))
+
+                // Selección de Rol
+                Text("¿Quién eres?", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = uiState.role == "Estudiante",
+                        onClick = { viewModel.onRoleChanged("Estudiante") },
+                        label = { Text("Soy Estudiante") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = uiState.role == "Maestro",
+                        onClick = { viewModel.onRoleChanged("Maestro") },
+                        label = { Text("Soy Maestro") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
 
                 TutoTextField(
                     label = "Nombre completo",
@@ -84,6 +113,25 @@ fun RegisterScreen(
                     isPassword = true
                 )
 
+                // Campo extra para maestros
+                if (uiState.role == "Maestro") {
+                    TutoTextField(
+                        label = "Materias (separadas por coma)",
+                        value = uiState.subjects,
+                        onValueChange = { viewModel.onSubjectsChanged(it) },
+                        icon = Icons.AutoMirrored.Filled.MenuBook
+                    )
+                }
+
+                if (uiState.error != null) {
+                    Text(
+                        text = uiState.error ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp),
+                        fontSize = 12.sp
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(30.dp))
 
                 if (uiState.isLoading) {
@@ -91,14 +139,16 @@ fun RegisterScreen(
                 } else {
                     TutoGradientButton(
                         text = "Registrarme",
-                        onClick = { viewModel.signUp() }
+                        onClick = { viewModel.signUp(onSuccess = onRegisterSuccess) }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
-                    Modifier.fillMaxWidth().clickable { onBackToLogin() },
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { onBackToLogin() },
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text("¿Ya tienes cuenta? ")

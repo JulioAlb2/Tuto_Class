@@ -1,6 +1,6 @@
-package com.example.tutoclass.feature.users.data.remote
+package com.example.tutoclass.feature.users.data.datasource.remote
 
-import com.example.tutoclass.feature.users.data.remote.dto.UserResponse
+import com.example.tutoclass.feature.users.data.datasource.remote.dto.UserResponse
 import com.example.tutoclass.feature.users.domain.model.User
 
 
