@@ -7,7 +7,13 @@ import javax.inject.Inject
 class RegisterUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
-    suspend operator fun invoke(nombre: String, email: String, password: String, rol: String): Result<User> {
+    suspend operator fun invoke(
+        nombre: String,
+        email: String,
+        password: String,
+        rol: String,
+        materias: List<String>? = null
+    ): Result<User> {
         if (nombre.isBlank() || email.isBlank() || password.isBlank() || rol.isBlank()) {
             return Result.failure(Exception("Todos los campos son obligatorios"))
         }
@@ -20,6 +26,10 @@ class RegisterUseCase @Inject constructor(
             return Result.failure(Exception("La contraseña debe tener al menos 6 caracteres"))
         }
 
-        return repository.register(nombre, email, password, rol)
+        if (rol == "Maestro" && (materias == null || materias.isEmpty())) {
+            return Result.failure(Exception("Debe ingresar al menos una materia"))
+        }
+
+        return repository.register(nombre, email, password, rol, materias)
     }
 }

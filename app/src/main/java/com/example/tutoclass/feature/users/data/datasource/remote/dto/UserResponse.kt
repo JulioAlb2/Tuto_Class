@@ -1,4 +1,4 @@
-package com.example.tutoclass.feature.users.data.remote.dto
+package com.example.tutoclass.feature.users.data.datasource.remote.dto
 
 data class UserResponse(
     val id: String?,

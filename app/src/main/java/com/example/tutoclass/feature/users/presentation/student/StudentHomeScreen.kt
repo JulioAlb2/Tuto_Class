@@ -25,12 +25,11 @@ import com.example.tutoclass.core.ui.theme.TutoGradient
 import com.example.tutoclass.core.ui.theme.TutoGray
 import com.example.tutoclass.core.ui.theme.TutoGreen
 import com.example.tutoclass.core.ui.theme.TutoTextDark
-import com.example.tutoclass.ui.theme.*
 
 @Composable
 fun StudentHomeScreen(
     onLogout: () -> Unit,
-    viewModel: StudentHomeViewModel = hiltViewModel() // Inyectamos el ViewModel
+    viewModel: StudentHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
