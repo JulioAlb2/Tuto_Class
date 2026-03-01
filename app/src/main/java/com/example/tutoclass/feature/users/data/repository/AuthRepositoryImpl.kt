@@ -21,15 +21,25 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun login(email: String, pass: String): Result<User> {
         return try {
+            Log.d("AUTH_REPO", "Intentando login para: $email")
             val response = api.login(LoginRequest(email, pass))
+            
+            // Log para ver la respuesta cruda (opcional, ayuda a debuguear)
+            Log.d("AUTH_REPO", "Respuesta recibida: $response")
+            
             val user = response.toDomain()
             
+            // DIAGNÓSTICO CRÍTICO
+            Log.e("PRUEBA_DIAGNOSTICO", "DATOS MAPEADOS -> ID: ${user.id}, NOMBRE: ${user.nombre}, ROL: '${user.rol}'")
+
             if (user.token.isNullOrEmpty()) {
-                Log.e("AUTH_REPO", "Error: La API de login no devolvió un token válido")
                 return Result.failure(Exception("Token no recibido del servidor"))
             }
 
-            Log.d("AUTH_REPO", "Login exitoso. Guardando usuario en local: ${user.nombre}")
+            if (user.rol.isEmpty()) {
+                Log.e("AUTH_REPO", "¡ATENCIÓN! El rol llegó VACÍO tras el mapeo. Revisa la estructura del JSON.")
+            }
+
             localDataSource.saveUser(user)
             Result.success(user)
         } catch (e: Exception) {
@@ -46,18 +56,24 @@ class AuthRepositoryImpl @Inject constructor(
         materias: List<String>?
     ): Result<User> {
         return try {
-            val request = RegisterRequest(nombre, email, pass, materias)
+            val request = RegisterRequest(
+                nombre = nombre,
+                email = email,
+                password = pass,
+                role = rol,
+                materias = materias
+            )
 
-            val response = if (rol == "Maestro") {
+            val response = if (rol.contains("Maestro", ignoreCase = true)) {
                 api.registerMaestro(request)
             } else {
                 api.registerAlumno(request)
             }
 
             val user = response.toDomain()
-            
+            Log.e("PRUEBA_DIAGNOSTICO", "REGISTRO -> ROL MAPEADO: '${user.rol}'")
+
             if (!user.token.isNullOrEmpty()) {
-                Log.d("AUTH_REPO", "Registro exitoso. Guardando usuario en local: ${user.nombre}")
                 localDataSource.saveUser(user)
             }
             Result.success(user)
@@ -68,7 +84,6 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        Log.d("AUTH_REPO", "Cerrando sesión...")
         localDataSource.clearUser()
     }
 

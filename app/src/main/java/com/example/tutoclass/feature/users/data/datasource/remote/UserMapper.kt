@@ -3,34 +3,28 @@ package com.example.tutoclass.feature.users.data.datasource.remote
 import com.example.tutoclass.feature.users.data.datasource.remote.dto.UserResponse
 import com.example.tutoclass.feature.users.domain.model.User
 
-
 fun UserResponse?.toDomain(): User {
-    if (this == null) {
-        return User(
-            id = "",
-            nombre = "Usuario",
-            email = "",
-            rol = "",
-            token = null
-        )
-    }
+    val userData = this?.userData
+    
+    val rawId = userData?.id?.toString() ?: ""
+    val finalId = if (rawId.endsWith(".0")) rawId.substringBefore(".0") else rawId
+    
+    val finalName = userData?.nombre ?: "Usuario"
+    val finalRole = userData?.rol ?: ""
+    val finalEmail = userData?.email ?: ""
 
     return User(
-        id = this.id ?: "",
-        nombre = this.nombre ?: "Usuario",
-        email = this.email ?: "",
-        rol = this.rol ?: "",
-        token = this.token
+        id = finalId,
+        nombre = finalName,
+        email = finalEmail,
+        rol = finalRole,
+        token = this?.token
     )
 }
 
-
 fun User.toDto(): UserResponse {
     return UserResponse(
-        id = this.id,
-        nombre = this.nombre,
-        email = this.email,
-        rol = this.rol,
+        userData = null,
         token = this.token
     )
 }
