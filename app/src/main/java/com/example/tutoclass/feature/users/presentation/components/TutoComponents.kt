@@ -11,15 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.tutoclass.core.ui.theme.TutoGradient
-import com.example.tutoclass.core.ui.theme.TutoGray
-import com.example.tutoclass.core.ui.theme.TutoGreen
-import com.example.tutoclass.core.ui.theme.TutoTextDark
+import com.example.compose.*
 
 @Composable
 fun TutoTextField(
@@ -27,21 +25,27 @@ fun TutoTextField(
     value: String,
     onValueChange: (String) -> Unit,
     icon: ImageVector,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    containerColor: Color = surfaceContainerLight
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+        Text(text = label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = onSurfaceLight)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            leadingIcon = { Icon(icon, contentDescription = null, tint = TutoGray) },
-            placeholder = { Text("Introduce tu $label", color = TutoGray) },
+            textStyle = TextStyle(color = onSurfaceLight, fontSize = 16.sp),
+            leadingIcon = { Icon(icon, contentDescription = null, tint = onSurfaceVariantLight) },
+            placeholder = { Text("Introduce tu $label", color = onSurfaceVariantLight) },
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = TutoGreen,
-                unfocusedBorderColor = Color(0xFFE0E0E0)
+                focusedTextColor = onSurfaceLight,
+                unfocusedTextColor = onSurfaceLight,
+                focusedBorderColor = primaryLight,
+                unfocusedBorderColor = outlineVariantLight,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
             )
         )
     }
@@ -53,18 +57,18 @@ fun RoleButton(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    icon: String // Emoji o Icono
+    icon: String
 ) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(48.dp),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(2.dp, if (isSelected) TutoGreen else Color(0xFFE0E0E0)),
+        border = BorderStroke(2.dp, if (isSelected) primaryLight else outlineVariantLight),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (isSelected) Color(0xFFE8F5E9) else Color.Transparent
+            containerColor = if (isSelected) primaryContainerLight else Color.Transparent
         )
     ) {
-        Text(text = "$icon $text", color = if (isSelected) TutoTextDark else TutoGray)
+        Text(text = "$icon $text", color = if (isSelected) onSurfaceLight else onSurfaceVariantLight)
     }
 }
 
@@ -92,7 +96,7 @@ fun TutoGradientButton(
         ) {
             Text(
                 text = text,
-                color = Color.White,
+                color = onPrimaryLight,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )

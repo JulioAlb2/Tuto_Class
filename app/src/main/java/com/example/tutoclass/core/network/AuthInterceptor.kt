@@ -12,7 +12,7 @@ class AuthInterceptor @Inject constructor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        val urlPath = request.url().encodedPath()
+        val urlPath = request.url.encodedPath
         
         if (urlPath.contains("auth/login") ||
             urlPath.contains("auth/register")) {

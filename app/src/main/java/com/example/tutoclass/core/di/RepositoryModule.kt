@@ -1,7 +1,9 @@
 package com.example.tutoclass.core.di
 
 import com.example.tutoclass.feature.groups.data.repository.GroupRepositoryImpl
+import com.example.tutoclass.feature.groups.data.repository.MessageRepositoryImpl
 import com.example.tutoclass.feature.groups.domain.repository.GroupRepository
+import com.example.tutoclass.feature.groups.domain.repository.MessageRepository
 import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSource
 import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSourceImpl
 import com.example.tutoclass.feature.users.data.repository.AuthRepositoryImpl
@@ -33,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun bindGroupRepository(
         groupRepositoryImpl: GroupRepositoryImpl
     ): GroupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMessageRepository(
+        messageRepositoryImpl: MessageRepositoryImpl
+    ): MessageRepository
 }

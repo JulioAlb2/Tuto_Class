@@ -11,6 +11,8 @@ import com.example.tutoclass.feature.groups.presentation.teacher.TeacherHomeScre
 import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSource
 import com.example.tutoclass.feature.users.presentation.auth.LoginScreen
 import com.example.tutoclass.feature.users.presentation.auth.RegisterScreen
+import com.example.tutoclass.feature.groups.presentation.student.StudentGroupsScreen
+import com.example.tutoclass.feature.groups.presentation.student.GroupDetailScreen
 import kotlinx.coroutines.flow.first
 
 @Composable
@@ -43,14 +45,12 @@ fun NavGraph(
                 
                 Log.d("NAV_GRAPH", "Role detectado: '$role'")
 
-                // Verificación flexible del rol
                 if (role.contains("maestro") || role.contains("teacher") || role.contains("profesor")) {
                     Log.d("NAV_GRAPH", "Navegando a Teacher Home")
                     navController.navigate("teacher_home") {
                         popUpTo("check_role") { inclusive = true }
                     }
                 } else {
-                    // Por defecto si es alumno, estudiante o cualquier otro, va a Student Home
                     Log.d("NAV_GRAPH", "Navegando a Student Home")
                     navController.navigate("student_home") {
                         popUpTo("check_role") { inclusive = true }
@@ -78,7 +78,32 @@ fun NavGraph(
                     navController.navigate("login") {
                         popUpTo("student_home") { inclusive = true }
                     }
+                },
+                onNavigateToGroups = {
+                    navController.navigate("student_groups")
+                },
+                onNavigateToGroup = { groupId ->
+                    Log.d("NAV_GRAPH", "Navegando al detalle del grupo: $groupId")
+                    navController.navigate("group_detail/$groupId")
                 }
+            )
+        }
+
+        composable("student_groups") {
+            StudentGroupsScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToGroup = { groupId ->
+                    Log.d("NAV_GRAPH", "Navegando al detalle del grupo (desde lista): $groupId")
+                    navController.navigate("group_detail/$groupId")
+                }
+            )
+        }
+
+        composable("group_detail/{groupId}") {
+            GroupDetailScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

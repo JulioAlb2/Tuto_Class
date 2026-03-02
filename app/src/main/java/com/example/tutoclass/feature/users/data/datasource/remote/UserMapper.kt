@@ -5,10 +5,10 @@ import com.example.tutoclass.feature.users.domain.model.User
 
 fun UserResponse?.toDomain(): User {
     val userData = this?.userData
-    
+
     val rawId = userData?.id?.toString() ?: ""
     val finalId = if (rawId.endsWith(".0")) rawId.substringBefore(".0") else rawId
-    
+
     val finalName = userData?.nombre ?: "Usuario"
     val finalRole = userData?.rol ?: ""
     val finalEmail = userData?.email ?: ""
