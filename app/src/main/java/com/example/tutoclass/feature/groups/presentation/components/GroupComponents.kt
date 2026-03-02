@@ -74,7 +74,7 @@ fun GroupDetailInfo(
                 Box(
                     modifier = Modifier
                         .size(50.dp)
-                        .background(primaryContainerLight, RoundedCornerShape(12.dp)),
+                        .background(backgroundLight, RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Class, null, tint = primaryLight)

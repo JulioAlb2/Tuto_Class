@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import com.example.compose.TutoTheme
 import com.example.tutoclass.feature.users.presentation.navigation.NavGraph
 import com.example.tutoclass.core.ui.theme.TutoClassTheme
 import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSource
@@ -20,9 +22,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            TutoClassTheme {
+            TutoTheme {
                 NavGraph(authLocalDataSource = authLocalDataSource)
             }
         }

@@ -15,7 +15,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.compose.TutoGradient
+import com.example.compose.backgroundLight
+import com.example.compose.onPrimaryDark
+import com.example.compose.onPrimaryLight
+import com.example.compose.onTertiaryDark
 import com.example.compose.primaryDark
+import com.example.compose.primaryLight
+import com.example.compose.secondaryLight
+import com.example.compose.surfaceDark
+import com.example.compose.tertiaryDark
+import com.example.compose.tertiaryLight
 import com.example.tutoclass.core.ui.theme.TutoBgCanvas
 import com.example.tutoclass.core.ui.theme.TutoGray
 import com.example.tutoclass.core.ui.theme.TutoGreen
@@ -34,7 +43,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(TutoBgCanvas)
+            .background(backgroundLight)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -48,8 +57,12 @@ fun LoginScreen(
         ) {
             Icon(Icons.Default.School, null, tint = Color.White, modifier = Modifier.size(45.dp))
         }
-        Text("TutoClass", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
-        Text("Aprende sin límites", color = TutoGray)
+        Spacer(modifier = Modifier.height(15.dp))
+
+        Text("TutoClass", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = secondaryLight)
+        Spacer(modifier = Modifier.height(5.dp))
+
+        Text("Aprende sin límites", color = surfaceDark)
 
         Spacer(modifier = Modifier.height(30.dp))
 
@@ -111,9 +124,9 @@ fun LoginScreen(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     Text("¿No tienes cuenta? ")
                     Text(
-                        text = "Regístrate gratis",
-                        color = TutoGreen,
+                        text = "Regístrate",
                         fontWeight = FontWeight.Bold,
+                        color = primaryLight,
                         modifier = Modifier.clickable { onNavigateToRegister() }
                     )
                 }

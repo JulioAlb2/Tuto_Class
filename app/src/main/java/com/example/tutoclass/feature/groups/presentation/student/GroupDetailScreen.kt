@@ -1,7 +1,8 @@
 package com.example.tutoclass.feature.groups.presentation.student
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +14,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.compose.*
-import com.example.tutoclass.core.ui.theme.TutoBgCanvas
 import com.example.tutoclass.feature.groups.domain.model.Message
 import com.example.tutoclass.feature.groups.presentation.components.GroupDetailInfo
 
@@ -40,38 +42,54 @@ fun GroupDetailScreen(
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    // Scroll al último mensaje cuando llega uno nuevo
+    var messageToEdit by remember { mutableStateOf<Message?>(null) }
+    var messageToDelete by remember { mutableStateOf<Message?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
-            listState.animateScrollToItem(state.messages.size)
+            listState.animateScrollToItem(0)
         }
     }
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Column {
                         Text(
-                            text = state.group?.name ?: "Cargando...",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            text = "Chat del Grupo",
+                            fontWeight = FontWeight.Bold, fontSize = 18.sp,
+                            color = onSurfaceLight
                         )
-                        if (state.group != null) {
-                            Text(
-                                text = state.group!!.subject,
-                                fontSize = 12.sp,
-                                color = onSurfaceVariantLight
-                            )
-                        }
+                        Text(
+                            text = "Comunidad TutoClass",
+                            fontSize = 12.sp, 
+                            color = onSurfaceVariantLight
+                        )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = primaryLight)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceLight)
+            )
+        },
+        bottomBar = {
+            ChatInput(
+                text = messageText,
+                onTextChange = { messageText = it },
+                onSend = {
+                    if (messageText.isNotBlank()) {
+                        viewModel.sendMessage(messageText)
+                        messageText = ""
+                    }
+                },
+                isSending = state.isSending
             )
         }
     ) { padding ->
@@ -79,147 +97,148 @@ fun GroupDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(TutoBgCanvas)
+                .background(surfaceLight)
         ) {
-            Box(
+            // 1. Cabecera con Información del Grupo
+            Column(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                if (state.isLoading && state.group == null) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = primaryLight
-                    )
-                } else if (state.error != null && state.group == null) {
-                    Text(
-                        text = state.error ?: "Error desconocido",
-                        color = errorLight,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                state.group?.let { group ->
+                    GroupDetailInfo(group = group)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .combinedClickable(onClick = { showSheet = true }),
+                    colors = CardDefaults.cardColors(containerColor = surfaceContainerLight),
+                    elevation = CardDefaults.cardElevation(0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Info del Grupo y botón de alumnos
-                        item {
-                            state.group?.let { group ->
-                                GroupDetailInfo(group = group)
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Group, null, tint = primaryLight, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text("Alumnos Inscritos", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = onSurfaceLight)
                         }
-
-                        item {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showSheet = true },
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(2.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Default.Group, null, tint = primaryLight)
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Text(
-                                            "Alumnos Inscritos", 
-                                            fontWeight = FontWeight.Bold,
-                                            color = onSurfaceLight
-                                        )
-                                    }
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Surface(
-                                            color = primaryContainerLight,
-                                            shape = CircleShape
-                                        ) {
-                                            Text(
-                                                text = state.students.size.toString(),
-                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = primaryLight
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Icon(Icons.Default.ChevronRight, null, tint = outlineVariantLight)
-                                    }
-                                }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(color = primaryContainerLight, shape = CircleShape) {
+                                Text(
+                                    text = state.students.size.toString(),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    fontSize = 12.sp, fontWeight = FontWeight.Bold, color = primaryLight
+                                )
                             }
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text(
-                                "Mensajes del Grupo",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = onSurfaceVariantLight,
-                                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                            )
-                        }
-
-                        // Lista de Mensajes
-                        items(state.messages) { message ->
-                            MessageBubble(
-                                message = message,
-                                isCurrentUser = message.userId.toString() == state.currentUser?.id
-                            )
+                            Icon(Icons.Default.ChevronRight, null, tint = outlineVariantLight)
                         }
                     }
                 }
             }
 
-            // Input de Chat
-            ChatInput(
-                text = messageText,
-                onTextChange = { messageText = it },
-                onSend = {
-                    viewModel.sendMessage(messageText)
-                    messageText = ""
+            HorizontalDivider(modifier = Modifier.padding(top = 8.dp), color = outlineVariantLight.copy(0.3f))
+
+            // 2. Contenedor del Chat
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(onBackgroundDark)
+            ) {
+                if (state.isLoading && state.group == null) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = primaryLight)
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        reverseLayout = true,
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(state.messages.asReversed(), key = { it.id }) { message ->
+                            MessageBubble(
+                                message = message,
+                                isCurrentUser = message.userId.toString() == state.currentUser?.id,
+                                onEditRequest = { messageToEdit = message; showEditDialog = true },
+                                onDeleteRequest = { messageToDelete = message; showDeleteDialog = true }
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                    }
+                }
+            }
+        }
+
+        // Diálogos de Edición y Borrado
+        if (showEditDialog && messageToEdit != null) {
+            var editedText by remember { mutableStateOf(messageToEdit!!.text) }
+            AlertDialog(
+                onDismissRequest = { showEditDialog = false },
+                title = { Text("Editar Mensaje", color = onSurfaceLight) },
+                text = { 
+                    TextField(
+                        value = editedText, 
+                        onValueChange = { editedText = it }, 
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = onSurfaceLight,
+                            unfocusedTextColor = onSurfaceLight,
+                            focusedContainerColor = surfaceContainerLight,
+                            unfocusedContainerColor = surfaceContainerLight
+                        )
+                    ) 
                 },
-                isSending = state.isSending
+                confirmButton = {
+                    TextButton(onClick = { viewModel.updateMessage(messageToEdit!!.id, editedText); showEditDialog = false }) { 
+                        Text("Guardar", color = primaryLight) 
+                    }
+                },
+                dismissButton = { 
+                    TextButton(onClick = { showEditDialog = false }) { 
+                        Text("Cancelar", color = onSurfaceVariantLight) 
+                    } 
+                },
+                containerColor = surfaceLight
             )
         }
 
-        // Modal para Lista de Alumnos
+        if (showDeleteDialog && messageToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Eliminar Mensaje", color = onSurfaceLight) },
+                text = { Text("¿Estás seguro de que quieres eliminar este mensaje?", color = onSurfaceVariantLight) },
+                confirmButton = {
+                    TextButton(
+                        onClick = { viewModel.deleteMessage(messageToDelete!!.id); showDeleteDialog = false },
+                        colors = ButtonDefaults.textButtonColors(contentColor = errorLight)
+                    ) { Text("Eliminar") }
+                },
+                dismissButton = { 
+                    TextButton(onClick = { showDeleteDialog = false }) { 
+                        Text("Cancelar", color = onSurfaceVariantLight) 
+                    } 
+                },
+                containerColor = surfaceLight
+            )
+        }
+
         if (showSheet) {
             ModalBottomSheet(
-                onDismissRequest = { showSheet = false },
+                onDismissRequest = { showSheet = false }, 
                 sheetState = sheetState,
-                containerColor = surfaceLight,
-                dragHandle = { BottomSheetDefaults.DragHandle(color = outlineVariantLight) }
+                containerColor = surfaceLight
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight(0.7f)
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "Compañeros de Clase",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = onSurfaceLight,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    
-                    if (state.students.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("No hay más alumnos inscritos aún", color = onSurfaceVariantLight)
-                        }
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(bottom = 32.dp)
-                        ) {
-                            items(state.students) { student ->
-                                StudentItem(name = student.nombre, email = student.email)
-                            }
-                        }
+                Column(modifier = Modifier.fillMaxHeight(0.7f).padding(16.dp)) {
+                    Text("Compañeros de Clase", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = onSurfaceLight)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyColumn {
+                        items(state.students) { student -> StudentItem(student.nombre, student.email) }
                     }
                 }
             }
@@ -227,44 +246,77 @@ fun GroupDetailScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MessageBubble(message: Message, isCurrentUser: Boolean) {
+fun MessageBubble(
+    message: Message, isCurrentUser: Boolean,
+    onEditRequest: () -> Unit, onDeleteRequest: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (isCurrentUser) Alignment.End else Alignment.Start
     ) {
         if (!isCurrentUser) {
             Text(
-                text = message.userName,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+                text = message.userName, fontSize = 11.sp, fontWeight = FontWeight.Bold,
                 color = primaryLight,
                 modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
             )
         }
-        
-        Surface(
-            color = if (isCurrentUser) primaryLight else Color.White,
-            shape = RoundedCornerShape(
-                topStart = 16.dp,
-                topEnd = 16.dp,
-                bottomStart = if (isCurrentUser) 16.dp else 4.dp,
-                bottomEnd = if (isCurrentUser) 4.dp else 16.dp
-            ),
-            tonalElevation = 1.dp,
-            shadowElevation = 1.dp
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                Text(
-                    text = message.text,
-                    color = if (isCurrentUser) Color.White else onSurfaceLight,
-                    fontSize = 14.sp
+        Box {
+            Surface(
+                color = if (isCurrentUser) primaryLight else surfaceContainerLowestLight,
+                shape = RoundedCornerShape(
+                    topStart = 16.dp, topEnd = 16.dp,
+                    bottomStart = if (isCurrentUser) 16.dp else 4.dp,
+                    bottomEnd = if (isCurrentUser) 4.dp else 16.dp
+                ),
+                tonalElevation = 1.dp, shadowElevation = 1.dp,
+                modifier = Modifier.combinedClickable(
+                    onClick = { },
+                    onLongClick = { if (isCurrentUser) showMenu = true }
                 )
-                Text(
-                    text = message.createdAt.substringAfter("T").take(5), // Formato simple HH:mm
-                    color = if (isCurrentUser) Color.White.copy(alpha = 0.7f) else onSurfaceVariantLight,
-                    fontSize = 10.sp,
-                    modifier = Modifier.align(Alignment.End)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    Text(
+                        text = message.text, 
+                        color = if (isCurrentUser) onPrimaryLight else onSurfaceLight, 
+                        fontSize = 14.sp
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        if (message.edited) {
+                            Text(
+                                text = "editado ", 
+                                fontSize = 9.sp, 
+                                color = if (isCurrentUser) onPrimaryLight.copy(0.6f) else onSurfaceVariantLight
+                            )
+                        }
+                        Text(
+                            text = message.createdAt.substringAfter("T").take(5),
+                            color = if (isCurrentUser) onPrimaryLight.copy(alpha = 0.7f) else onSurfaceVariantLight,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
+            }
+            DropdownMenu(
+                expanded = showMenu, 
+                onDismissRequest = { showMenu = false },
+                modifier = Modifier.background(surfaceLight)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Editar", color = onSurfaceLight) }, 
+                    onClick = { showMenu = false; onEditRequest() }, 
+                    leadingIcon = { Icon(Icons.Default.Edit, null, tint = primaryLight) }
+                )
+                DropdownMenuItem(
+                    text = { Text("Eliminar", color = errorLight) }, 
+                    onClick = { showMenu = false; onDeleteRequest() }, 
+                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = errorLight) }
                 )
             }
         }
@@ -272,36 +324,37 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean) {
 }
 
 @Composable
-fun ChatInput(
-    text: String,
-    onTextChange: (String) -> Unit,
-    onSend: () -> Unit,
-    isSending: Boolean
-) {
+fun ChatInput(text: String, onTextChange: (String) -> Unit, onSend: () -> Unit, isSending: Boolean) {
     Surface(
-        color = Color.White,
+        color = surfaceLight,
         tonalElevation = 8.dp,
-        modifier = Modifier.imePadding()
+        modifier = Modifier.fillMaxWidth().imePadding()
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .fillMaxWidth()
+                .navigationBarsPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                placeholder = { Text("Escribe un mensaje...") },
+                placeholder = {
+                    Text("Escribe un mensaje...", color = onSurfaceVariantLight.copy(alpha = 0.7f))
+                },
                 modifier = Modifier
                     .weight(1f)
-                    .clip(CircleShape),
+                    .heightIn(min = 52.dp),
+                shape = RoundedCornerShape(26.dp),
                 colors = TextFieldDefaults.colors(
+                    focusedTextColor = onSurfaceLight,
+                    unfocusedTextColor = onSurfaceLight,
+                    focusedContainerColor = surfaceContainerLight,
+                    unfocusedContainerColor = surfaceContainerLight,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    focusedContainerColor = surfaceContainerLight,
-                    unfocusedContainerColor = surfaceContainerLight
+                    cursorColor = primaryLight
                 ),
                 maxLines = 4
             )
@@ -310,16 +363,14 @@ fun ChatInput(
                 onClick = onSend,
                 enabled = text.isNotBlank() && !isSending,
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = primaryLight,
-                    contentColor = Color.White,
+                    containerColor = primaryLight, 
+                    contentColor = onPrimaryLight,
                     disabledContainerColor = outlineVariantLight
-                )
+                ),
+                modifier = Modifier.size(48.dp)
             ) {
-                if (isSending) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar")
-                }
+                if (isSending) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = onPrimaryLight, strokeWidth = 2.dp)
+                else Icon(Icons.AutoMirrored.Filled.Send, null)
             }
         }
     }
@@ -328,26 +379,15 @@ fun ChatInput(
 @Composable
 fun StudentItem(name: String, email: String) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp), 
+        colors = CardDefaults.cardColors(containerColor = surfaceContainerLowestLight),
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(40.dp),
-                shape = CircleShape,
-                color = surfaceContainerLight
-            ) {
+        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Surface(modifier = Modifier.size(36.dp), shape = CircleShape, color = primaryContainerLight) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = name.take(1).uppercase(),
-                        fontWeight = FontWeight.Bold,
-                        color = primaryLight
-                    )
+                    Text(name.take(1).uppercase(), fontWeight = FontWeight.Bold, color = primaryLight)
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))

@@ -16,10 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.compose.backgroundLight
+import com.example.compose.primaryDark
 import com.example.tutoclass.core.ui.theme.TutoBgCanvas
 import com.example.tutoclass.core.ui.theme.TutoGray
-import com.example.tutoclass.core.ui.theme.TutoGreen
-import com.example.tutoclass.core.ui.theme.TutoTextDark
 import com.example.tutoclass.feature.users.presentation.components.TutoGradientButton
 import com.example.tutoclass.feature.users.presentation.components.TutoTextField
 
@@ -34,13 +34,12 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(TutoBgCanvas)
+            .background(backgroundLight)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Botón volver atrás
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,7 +47,7 @@ fun RegisterScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackToLogin) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = TutoTextDark)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = primaryDark)
             }
             Text("Crear cuenta", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
@@ -152,7 +151,7 @@ fun RegisterScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text("¿Ya tienes cuenta? ")
-                    Text("Inicia sesión", color = TutoGreen, fontWeight = FontWeight.Bold)
+                    Text("Inicia sesión", color = primaryDark, fontWeight = FontWeight.Bold)
                 }
             }
         }
