@@ -4,6 +4,7 @@ import com.example.tutoclass.feature.groups.data.datasource.remote.dto.CreateGro
 import com.example.tutoclass.feature.groups.data.datasource.remote.dto.GroupResponse
 import com.example.tutoclass.feature.groups.data.datasource.remote.dto.JoinGroupRequest
 import com.example.tutoclass.feature.groups.data.datasource.remote.dto.UpdateGroupRequest
+import com.example.tutoclass.feature.users.data.datasource.remote.dto.UserData
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -14,6 +15,12 @@ import retrofit2.http.Path
 interface GroupApi {
     @GET("groups")
     suspend fun getActiveGroups(): List<GroupResponse>
+
+    @GET("groups/{id}")
+    suspend fun getGroupById(@Path("id") id: Int): GroupResponse
+
+    @GET("groups/{id}/students")
+    suspend fun getGroupStudents(@Path("id") id: Int): List<UserData>
 
     @POST("groups")
     suspend fun createGroup(@Body request: CreateGroupRequest): GroupResponse

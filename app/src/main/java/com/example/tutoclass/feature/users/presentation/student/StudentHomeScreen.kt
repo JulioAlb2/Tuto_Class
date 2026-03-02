@@ -2,8 +2,6 @@ package com.example.tutoclass.feature.users.presentation.student
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,15 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.compose.*
 import com.example.tutoclass.core.ui.theme.TutoBgCanvas
-import com.example.tutoclass.core.ui.theme.TutoGradient
-import com.example.tutoclass.core.ui.theme.TutoGray
-import com.example.tutoclass.core.ui.theme.TutoGreen
-import com.example.tutoclass.core.ui.theme.TutoTextDark
+import com.example.tutoclass.feature.groups.presentation.components.GroupCard
 
 @Composable
 fun StudentHomeScreen(
     onLogout: () -> Unit,
+    onNavigateToGroups: () -> Unit,
+    onNavigateToGroup: (Int) -> Unit,
     viewModel: StudentHomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -36,8 +34,8 @@ fun StudentHomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showJoinDialog = true },
-                containerColor = TutoGreen,
-                contentColor = Color.White
+                containerColor = primaryLight,
+                contentColor = onPrimaryLight
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Unirse a una clase")
             }
@@ -61,30 +59,44 @@ fun StudentHomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.School, contentDescription = null, tint = TutoGreen, modifier = Modifier.size(28.dp))
+                        Icon(Icons.Default.School, contentDescription = null, tint = primaryLight, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("TutoClass", color = TutoGreen, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("TutoClass", color = primaryLight, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Estudiante", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Text("🎓 En línea", fontSize = 11.sp, color = TutoGray)
+                            Text(
+                                text = state.user?.nombre ?: "Usuario",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = onSurfaceLight
+                            )
+                            Text(
+                                text = "🎓 ${state.user?.rol?.replaceFirstChar { it.uppercase() } ?: "Estudiante"}",
+                                fontSize = 11.sp,
+                                color = onSurfaceVariantLight
+                            )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         IconButton(
                             onClick = onLogout,
-                            modifier = Modifier.size(36.dp).background(Color(0xFFFFEBEE), CircleShape)
+                            modifier = Modifier.size(36.dp).background(errorContainerLight, CircleShape)
                         ) {
-                            Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Logout, contentDescription = null, tint = errorLight, modifier = Modifier.size(18.dp))
                         }
                     }
                 }
             }
 
             Column(modifier = Modifier.padding(20.dp)) {
-                Text("¡Hola!", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
-                Text("Continúa tu camino de aprendizaje", color = TutoGray)
+                Text(
+                    text = "¡Hola, ${state.user?.nombre?.split(" ")?.firstOrNull() ?: ""}!",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = onSurfaceLight
+                )
+                Text("Continúa tu camino de aprendizaje", color = onSurfaceVariantLight)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -96,23 +108,31 @@ fun StudentHomeScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                Text("Tus Clases", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Tus Clases", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = onSurfaceLight)
+                    TextButton(onClick = onNavigateToGroups) {
+                        Text("Ver todas", color = primaryLight)
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (state.isLoading) {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = TutoGreen)
+                        CircularProgressIndicator(color = primaryLight)
                     }
                 } else if (state.error != null) {
-                    Text("Error: ${state.error}", color = Color.Red, modifier = Modifier.padding(8.dp))
+                    Text("Error: ${state.error}", color = errorLight, modifier = Modifier.padding(8.dp))
                 } else if (state.groups.isEmpty()) {
-                    Text("No estás inscrito en ninguna clase aún.", color = TutoGray, modifier = Modifier.padding(8.dp))
+                    Text("No estás inscrito en ninguna clase aún.", color = onSurfaceVariantLight, modifier = Modifier.padding(8.dp))
                 } else {
-                    state.groups.forEach { group ->
-                        CourseCard(
-                            title = group.name,
-                            teacher = "Prof. ${group.teacherName}",
-                            emoji = if (group.subject.contains("Ingles", true)) "🗣️" else "📐"
+                    state.groups.take(3).forEach { group ->
+                        GroupCard(
+                            group = group,
+                            onClick = { onNavigateToGroup(group.id) }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -137,7 +157,7 @@ fun StudentHomeScreen(
                 text = { Text("Te has unido a la clase correctamente.") },
                 confirmButton = {
                     TextButton(onClick = { viewModel.resetJoinState() }) {
-                        Text("Aceptar", color = TutoGreen)
+                        Text("Aceptar", color = primaryLight)
                     }
                 }
             )
@@ -153,7 +173,7 @@ fun JoinGroupDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         title = { Text("Unirse a una clase", fontWeight = FontWeight.Bold) },
         text = {
             Column {
-                Text("Ingresa el código que te proporcionó tu profesor.", fontSize = 14.sp, color = TutoGray)
+                Text("Ingresa el código que te proporcionó tu profesor.", fontSize = 14.sp, color = onSurfaceVariantLight)
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = code,
@@ -162,7 +182,11 @@ fun JoinGroupDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
                     placeholder = { Text("Ej: ABC123") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = primaryLight,
+                        focusedLabelColor = primaryLight
+                    )
                 )
             }
         },
@@ -170,14 +194,14 @@ fun JoinGroupDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
             Button(
                 onClick = { onConfirm(code) },
                 enabled = code.length >= 4,
-                colors = ButtonDefaults.buttonColors(containerColor = TutoGreen)
+                colors = ButtonDefaults.buttonColors(containerColor = primaryLight)
             ) {
                 Text("Unirse")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = TutoGray)
+                Text("Cancelar", color = onSurfaceVariantLight)
             }
         }
     )
@@ -192,42 +216,10 @@ fun StatCard(value: String, label: String, icon: ImageVector, modifier: Modifier
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Icon(icon, null, tint = TutoGreen, modifier = Modifier.size(20.dp))
+            Icon(icon, null, tint = primaryLight, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TutoTextDark)
-            Text(label, fontSize = 11.sp, color = TutoGray)
-        }
-    }
-}
-
-@Composable
-fun CourseCard(title: String, teacher: String, emoji: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(60.dp).background(TutoBgCanvas, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(emoji, fontSize = 30.sp)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(teacher, color = TutoGray, fontSize = 13.sp)
-            }
-            Button(
-                onClick = {},
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = TutoGreen)
-            ) {
-                Text("Ver Clase", fontSize = 12.sp)
-            }
+            Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = onSurfaceLight)
+            Text(label, fontSize = 11.sp, color = onSurfaceVariantLight)
         }
     }
 }

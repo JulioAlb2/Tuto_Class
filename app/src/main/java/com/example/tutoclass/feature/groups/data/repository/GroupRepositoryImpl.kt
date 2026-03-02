@@ -5,6 +5,8 @@ import com.example.tutoclass.feature.groups.data.datasource.remote.dto.CreateGro
 import com.example.tutoclass.feature.groups.data.datasource.remote.dto.JoinGroupRequest
 import com.example.tutoclass.feature.groups.domain.model.Group
 import com.example.tutoclass.feature.groups.domain.repository.GroupRepository
+import com.example.tutoclass.feature.users.domain.model.User
+import com.example.tutoclass.feature.users.data.datasource.remote.dto.UserData
 import javax.inject.Inject
 
 class GroupRepositoryImpl @Inject constructor(
@@ -62,6 +64,24 @@ class GroupRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun getGroupById(groupId: Int): Result<Group> {
+        return try {
+            val response = api.getGroupById(groupId)
+            Result.success(response.toDomain())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getGroupStudents(groupId: Int): Result<List<User>> {
+        return try {
+            val response = api.getGroupStudents(groupId)
+            Result.success(response.map { it.toDomain() })
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
 fun com.example.tutoclass.feature.groups.data.datasource.remote.dto.GroupResponse.toDomain(): Group {
@@ -77,5 +97,15 @@ fun com.example.tutoclass.feature.groups.data.datasource.remote.dto.GroupRespons
         status = status,
         createdAt = createdAt,
         updatedAt = updatedAt
+    )
+}
+
+fun UserData.toDomain(): User {
+    return User(
+        id = id?.toString() ?: "",
+        nombre = nombre ?: "Usuario",
+        email = email ?: "",
+        rol = rol ?: "",
+        token = null
     )
 }

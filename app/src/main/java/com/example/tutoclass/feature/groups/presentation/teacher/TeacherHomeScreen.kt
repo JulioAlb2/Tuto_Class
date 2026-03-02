@@ -17,7 +17,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.compose.*
 import com.example.tutoclass.core.ui.theme.*
+import com.example.tutoclass.feature.groups.presentation.components.GroupCard
+import com.example.tutoclass.feature.groups.presentation.components.GroupHeader
 
 @Composable
 fun TeacherHomeScreen(
@@ -31,8 +34,8 @@ fun TeacherHomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showCreateDialog = true },
-                containerColor = TutoGreen,
-                contentColor = Color.White
+                containerColor = primaryLight,
+                contentColor = onPrimaryLight
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Crear Clase")
             }
@@ -44,27 +47,43 @@ fun TeacherHomeScreen(
                 .padding(padding)
                 .background(TutoBgCanvas)
         ) {
-            // Header (Similar al del estudiante pero con rol Maestro)
-            TeacherHeader(onLogout)
+            // Header dinámico
+            GroupHeader(
+                role = "Maestro",
+                onLogout = onLogout
+            )
 
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
-                    "Tus Clases",
-                    fontSize = 22.sp,
+                    text = "¡Hola, ${state.teacherName.split(" ").firstOrNull() ?: ""}!",
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TutoTextDark
+                    color = onSurfaceLight
                 )
-                Text("Gestiona tus grupos y códigos de acceso", color = TutoGray)
+                Text(
+                    text = "Gestiona tus grupos y códigos de acceso",
+                    color = onSurfaceVariantLight,
+                    fontSize = 14.sp
+                )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = TutoGreen)
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = primaryLight)
+                    }
+                }
+
+                if (state.error != null) {
+                    Text(text = "Error: ${state.error}", color = errorLight, modifier = Modifier.padding(8.dp))
                 }
 
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(state.groups) { group ->
-                        TeacherGroupCard(group)
+                        GroupCard(
+                            group = group,
+                            showAccessCode = true
+                        )
                     }
                 }
             }
@@ -91,39 +110,6 @@ fun TeacherHomeScreen(
 }
 
 @Composable
-fun TeacherGroupCard(group: com.example.tutoclass.feature.groups.domain.model.Group) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(50.dp).background(TutoBgCanvas, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Groups, contentDescription = null, tint = TutoGreen)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(group.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(group.subject, color = TutoGray, fontSize = 13.sp)
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text("CÓDIGO", fontSize = 10.sp, color = TutoGray, fontWeight = FontWeight.Bold)
-                Text(
-                    group.accessCode,
-                    color = TutoGreen,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun CreateGroupDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
     var name by remember { mutableStateOf("") }
     var subject by remember { mutableStateOf("") }
@@ -131,17 +117,44 @@ fun CreateGroupDialog(onDismiss: () -> Unit, onConfirm: (String, String, String)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Nueva Clase") },
+        title = { Text("Nueva Clase", fontWeight = FontWeight.Bold) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre de la clase") })
-                OutlinedTextField(value = subject, onValueChange = { subject = it }, label = { Text("Materia") })
-                OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Descripción (opcional)") })
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name, 
+                    onValueChange = { name = it }, 
+                    label = { Text("Nombre de la clase") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = subject, 
+                    onValueChange = { subject = it }, 
+                    label = { Text("Materia") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = desc, 
+                    onValueChange = { desc = it }, 
+                    label = { Text("Descripción (opcional)") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(name, subject, desc) }, colors = ButtonDefaults.buttonColors(containerColor = TutoGreen)) {
-                Text("Crear")
+            Button(
+                onClick = { onConfirm(name, subject, desc) }, 
+                colors = ButtonDefaults.buttonColors(containerColor = primaryLight),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Crear", color = onPrimaryLight)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = onSurfaceVariantLight)
             }
         }
     )
@@ -151,16 +164,17 @@ fun CreateGroupDialog(onDismiss: () -> Unit, onConfirm: (String, String, String)
 fun SuccessDialog(groupName: String, accessCode: String, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = TutoGreen, modifier = Modifier.size(48.dp)) },
-        title = { Text("¡Clase Creada!") },
+        icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = primaryLight, modifier = Modifier.size(48.dp)) },
+        title = { Text("¡Clase Creada!", fontWeight = FontWeight.Bold) },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("Comparte este código con tus alumnos:")
+                Text(text = "Clase: $groupName", fontWeight = FontWeight.Medium)
+                Text(text = "Comparte este código con tus alumnos:", fontSize = 14.sp, color = onSurfaceVariantLight)
                 Spacer(modifier = Modifier.height(16.dp))
                 Surface(
-                    color = TutoBgCanvas,
-                    shape = RoundedCornerShape(12.dp),
-                    border = androidx.compose.foundation.BorderStroke(2.dp, TutoGreen)
+                    color = surfaceContainerLight,
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, primaryLight)
                 ) {
                     Text(
                         accessCode,
@@ -168,50 +182,19 @@ fun SuccessDialog(groupName: String, accessCode: String, onDismiss: () -> Unit) 
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 4.sp,
-                        color = TutoGreen
+                        color = primaryLight
                     )
                 }
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = TutoGreen)) {
-                Text("Entendido")
+            Button(
+                onClick = onDismiss, 
+                colors = ButtonDefaults.buttonColors(containerColor = primaryLight),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Entendido", color = onPrimaryLight)
             }
         }
     )
-}
-
-@Composable
-fun TeacherHeader(onLogout: () -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
-        shadowElevation = 4.dp
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.School, contentDescription = null, tint = TutoGreen, modifier = Modifier.size(28.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("TutoClass", color = TutoGreen, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Panel Maestro", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("👨‍🏫 Profesor", fontSize = 11.sp, color = TutoGray)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                IconButton(
-                    onClick = onLogout,
-                    modifier = Modifier.size(36.dp).background(Color(0xFFFFEBEE), CircleShape)
-                ) {
-                    Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red, modifier = Modifier.size(18.dp))
-                }
-            }
-        }
-    }
 }

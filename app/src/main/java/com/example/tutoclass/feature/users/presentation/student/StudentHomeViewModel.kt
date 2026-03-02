@@ -6,6 +6,7 @@ import com.example.tutoclass.feature.groups.domain.model.Group
 import com.example.tutoclass.feature.groups.domain.use_case.GetStudentGroupsUseCase
 import com.example.tutoclass.feature.groups.domain.use_case.JoinGroupUseCase
 import com.example.tutoclass.feature.users.data.datasource.local.AuthLocalDataSource
+import com.example.tutoclass.feature.users.domain.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class StudentHomeState(
+    val user: User? = null,
     val groups: List<Group> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -32,16 +34,17 @@ class StudentHomeViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        loadGroups()
+        loadInitialData()
     }
 
-    fun loadGroups() {
+    private fun loadInitialData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
                 val user = authLocalDataSource.getUser().first()
+                _state.update { it.copy(user = user) }
+                
                 val userId = user?.id?.toIntOrNull()
-
                 if (userId != null) {
                     val result = getStudentGroupsUseCase(userId)
                     result.onSuccess { groups ->
@@ -54,6 +57,20 @@ class StudentHomeViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message, isLoading = false) }
+            }
+        }
+    }
+
+    fun loadGroups() {
+        viewModelScope.launch {
+            val user = _state.value.user ?: authLocalDataSource.getUser().first()
+            val userId = user?.id?.toIntOrNull()
+
+            if (userId != null) {
+                val result = getStudentGroupsUseCase(userId)
+                result.onSuccess { groups ->
+                    _state.update { it.copy(groups = groups) }
+                }
             }
         }
     }
