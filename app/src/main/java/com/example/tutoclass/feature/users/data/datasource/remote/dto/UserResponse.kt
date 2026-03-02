@@ -1,12 +1,14 @@
 package com.example.tutoclass.feature.users.data.datasource.remote.dto
 
+import com.google.gson.annotations.SerializedName
 data class UserResponse(
-    val user: UserDto?,
+    @SerializedName("user")
+    val userData: UserData?,
     val token: String?
 )
 
-data class UserDto(
-    val id: Int?,
+data class UserData(
+    val id: Any?,
     val nombre: String?,
     val email: String?,
     val rol: String?
