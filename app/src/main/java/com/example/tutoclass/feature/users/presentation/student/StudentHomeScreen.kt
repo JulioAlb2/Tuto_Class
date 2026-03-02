@@ -45,12 +45,14 @@ fun StudentHomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(TutoBgCanvas)
+                .background(backgroundLight)
                 .verticalScroll(rememberScrollState())
         ) {
             Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.White,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp),
+                color = backgroundLightHighContrast,
                 shadowElevation = 4.dp
             ) {
                 Row(
@@ -65,19 +67,7 @@ fun StudentHomeScreen(
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = state.user?.nombre ?: "Usuario",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = onSurfaceLight
-                            )
-                            Text(
-                                text = "🎓 ${state.user?.rol?.replaceFirstChar { it.uppercase() } ?: "Estudiante"}",
-                                fontSize = 11.sp,
-                                color = onSurfaceVariantLight
-                            )
-                        }
+
                         Spacer(modifier = Modifier.width(12.dp))
                         IconButton(
                             onClick = onLogout,
@@ -102,8 +92,6 @@ fun StudentHomeScreen(
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     StatCard(state.groups.size.toString(), "Clases Activas", Icons.Default.MenuBook, Modifier.weight(1f))
-                    StatCard("24", "Horas Totales", Icons.Default.AccessTime, Modifier.weight(1f))
-                    StatCard("1", "Tareas", Icons.Default.EmojiEvents, Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.height(28.dp))
@@ -173,7 +161,9 @@ fun JoinGroupDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         title = { Text("Unirse a una clase", fontWeight = FontWeight.Bold) },
         text = {
             Column {
-                Text("Ingresa el código que te proporcionó tu profesor.", fontSize = 14.sp, color = onSurfaceVariantLight)
+                Text("Ingresa el código que te proporcionó tu profesor.",
+                    fontSize = 14.sp,
+                    color = surfaceVariantLight)
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = code,
@@ -201,7 +191,7 @@ fun JoinGroupDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = onSurfaceVariantLight)
+                Text("Cancelar", color = onSurfaceVariantDark)
             }
         }
     )
@@ -212,7 +202,7 @@ fun StatCard(value: String, label: String, icon: ImageVector, modifier: Modifier
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = onSecondaryLight),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
