@@ -78,18 +78,21 @@ class GroupDetailViewModel @Inject constructor(
     private fun observeMessages(groupId: Int) {
         messageRepository.listenToGroupEvents(groupId)
             .onEach { event ->
-                Log.d("GroupDetailVM", "Evento SSE procesado: $event")
+                Log.d("GroupDetailVM", "Evento SSE: $event")
                 when (event) {
                     is MessageEvent.Created -> {
                         _state.update { currentState ->
-                            val updatedMessages = currentState.messages.filter { it.id != event.message.id } + event.message
-                            currentState.copy(messages = updatedMessages.sortedBy { it.createdAt })
+                            val updatedMessages = (currentState.messages.filter { it.id != event.message.id } + event.message)
+                                .sortedBy { it.createdAt }
+                            currentState.copy(messages = updatedMessages)
                         }
                     }
                     is MessageEvent.Updated -> {
                         _state.update { currentState ->
-                            val updatedMessages = currentState.messages.map { if (it.id == event.message.id) event.message else it }
-                            currentState.copy(messages = updatedMessages.sortedBy { it.createdAt })
+                            val updatedMessages = currentState.messages.map { 
+                                if (it.id == event.message.id) event.message else it 
+                            }
+                            currentState.copy(messages = updatedMessages)
                         }
                     }
                     is MessageEvent.Deleted -> {
@@ -98,7 +101,7 @@ class GroupDetailViewModel @Inject constructor(
                         }
                     }
                     MessageEvent.Error -> {
-                        Log.e("GroupDetailVM", "Error en flujo SSE. La reconexión es automática.")
+                        Log.e("GroupDetailVM", "Error en flujo SSE")
                     }
                 }
             }
@@ -118,6 +121,26 @@ class GroupDetailViewModel @Inject constructor(
                 }
             
             _state.update { it.copy(isSending = false) }
+        }
+    }
+
+    fun updateMessage(messageId: Int, newText: String) {
+        if (newText.isBlank()) return
+        
+        viewModelScope.launch {
+            messageRepository.updateMessage(messageId, newText)
+                .onFailure { e ->
+                    _state.update { it.copy(error = "Error al editar: ${e.message}") }
+                }
+        }
+    }
+
+    fun deleteMessage(messageId: Int) {
+        viewModelScope.launch {
+            messageRepository.deleteMessage(messageId)
+                .onFailure { e ->
+                    _state.update { it.copy(error = "Error al eliminar: ${e.message}") }
+                }
         }
     }
 }
